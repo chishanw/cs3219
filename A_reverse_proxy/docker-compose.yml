@@ -1,0 +1,48 @@
+version: '3'
+
+services:
+
+  # Proxies requests to internal services
+  reverse-proxy:
+    image: nginx:latest
+    container_name: reverse_proxy
+    depends_on:
+        - display-number
+        - number-generator
+    volumes:
+      - ./reverse_proxy/nginx.conf:/etc/nginx/nginx.conf
+    ports:
+      - 80:80
+
+  # displays the number
+  display-number:
+    image: display-number
+    container_name: display-number
+    build:
+      context: ./display_number
+    depends_on:
+        - number-generator
+    ports:
+      - 8080:80
+    restart: on-failure
+
+
+  # randomly generates a number
+  number-generator:
+    image: number-generator
+    container_name: number-generator
+    build:
+      context: ./number_generator
+    ports:
+      - 5001:5001
+    restart: on-failure
+
+  # displays a message based on number
+  message-generator:
+    image: message-generator
+    container_name: message-generator
+    build:
+      context: ./message_generator
+    ports:
+      - 5002:5002
+    restart: on-failure
